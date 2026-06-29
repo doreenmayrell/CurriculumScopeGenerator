@@ -1,0 +1,212 @@
+[
+ {
+  "course": "8th Grade TEKS",
+  "domain": "The Number System",
+  "standardId": "CCSS.MATH.CONTENT.8.NS.A.1",
+  "standardDesc": "Know that numbers that are not rational are called irrational. Understand informally that every number has a decimal expansion; for rational numbers show that the decimal expansion repeats eventually, and convert a decimal expansion which repeats eventually into a rational number.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Classify Numbers",
+  "subId": "CCSS.MATH.CONTENT.8.NS.A.1+1",
+  "subDesc": "Classify real numbers by using definitions and subset relationships in the real number system to select or complete correct Venn diagram representations (including natural, whole, integers, rational, irrational, and real numbers)",
+  "ab": "Assessment is restricted to:\n- Real numbers only (no complex or imaginary numbers).\n- Number sets: natural numbers, whole numbers, integers, rational numbers, irrational numbers, and real numbers.\n- Numbers must not exceed three digits in magnitude.",
+  "diff": {
+   "easy": "Given a single Real Number (Rational, Irrational, Integers ,Whole Numbers, Natural Numbers) \n- Task: Identify the correct subset placement by simplifying/evaluating the number.\n- Numbers are straightforward to classify\n- Vary which set is the correct answer (Natural, Whole, Integer, Rational, Irrational).",
+   "medium": "Given two number sets (rational and irrational, or other pairs)\n- Task: Select the correct Venn diagram representation by applying definitions and subset/disjoint relationships.\n- Requires understanding subset relationships (natural ⊂ whole ⊂ integers ⊂ rational ⊂ real).\n- Venn diagrams show different relationship structures (disjoint, overlapping, subset).",
+   "hard": "Determine which Venn diagram correctly represents the subset relationship between two symbolically named sets using standard mathematical notation (N, W, Z, Q, R)."
+  },
+  "prereq": "- Students are expected to know the complete real number system hierarchy.\r\n- Students should understand that irrational numbers (like π and √2) cannot be expressed as fractions.\r\n- Formal set notation is appropriate at this grade level.\r\n- No complex numbers, imaginary numbers, or algebraic number theory concepts.",
+  "los": [
+   "Classify a given number into the correct subset of the real number system (natural, whole, integer, rational, irrational) by simplifying and evaluating the number.",
+   "Identify the correct Venn diagram representation of the relationship between two number sets (rational and irrational, or subsets like integers and rationals) by applying definitions and subset relationships.",
+   "Determine which Venn diagram correctly represents the subset relationship between two symbolically named sets using standard mathematical notation (N, W, Z, Q, R)."
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "The Number System",
+  "standardId": "CCSS.MATH.CONTENT.8.NS.A.2",
+  "standardDesc": "Use rational approximations of irrational numbers to compare the size of irrational numbers, locate them approximately on a number line diagram, and estimate the value of expressions (e.g., π²).",
+  "unit": "TEKS Supplemental",
+  "lesson": "Approximating Square Roots on the Number Line",
+  "subId": "CCSS.MATH.CONTENT.8.NS.A.2+6",
+  "subDesc": "Approximate square root values and match them to their correct locations on a number line.",
+  "ab": "Assessment is restricted to:\n- Square roots must be of positive whole numbers or positive decimals with at most one decimal place.\n- No negative numbers, complex numbers, or cube roots.\n- No algebraic manipulation or equation solving required.",
+  "diff": {
+   "easy": "Given a number line and a square root, determine which point best represents the value of the root.",
+   "medium": "Given a number line with one point on it (not on an integer), determine which value best represents the point, with answer choices that are square roots of whole numbers.",
+   "hard": "Given a number line with one point on it (not on an integer), determine which value best represents the point, with answer choices that are square roots of decimals (no more than one digit after the decimal)."
+  },
+  "prereq": "Prerequisite Skills:\n\n- Recall perfect squares from 1² through 9² (1, 4, 9, 16, 25, 36, 49, 64, 81)\n- Understand that a square root is the inverse of squaring a number\n- Multiply whole numbers fluently to verify perfect square values\n- Read and interpret number lines with integer and decimal intervals\n- Locate and estimate positions of values between labeled tick marks on a number line\n- Compare decimal values to determine relative proximity (e.g., which value is closer)\n- Understand proportional reasoning to estimate where a value falls between two benchmarks",
+  "los": [
+   "Approximate the value of a square root of a whole number and identify its location among labeled points on a number line with integer intervals.",
+   "Given a number line with one point on it (not on an integer), determine which value best represents the point, with answer choices that are square roots of whole numbers.",
+   "Given a number line with one point on it (not on an integer), determine which value best represents the point, with answer choices that are square roots of decimal numbers."
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "Functions",
+  "standardId": "CCSS.MATH.CONTENT.8.F.A.1",
+  "standardDesc": "Understand that a function is a rule that assigns to each input exactly one output. The graph of a function is the set of ordered pairs consisting of an input and the corresponding output.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Identify Functions",
+  "subId": "CCSS.MATH.CONTENT.8.F.A.1+1",
+  "subDesc": "Determine whether a relation represents a function by analyzing inputs and outputs across multiple representations.",
+  "ab": "Assessment is restricted to:\n- Relations presented as sets of ordered pairs, tables of values, or mapping diagrams.\n- Each set, table, or mapping contains 4 to 5 input-output pairs.",
+  "diff": {
+   "easy": "Given a relation represented as a set of ordered pairs with whole numbers, select the statement that correctly describes whether the relation is a function of x and provides the correct reasoning.",
+   "medium": "Given four sets of ordered pairs using only whole numbers, identify which set represents y as a function of x by checking that each x-value is paired with exactly one y-value. OR \n-Identify correct mapping diagram of whole numbers that represents y as a function of x OR\n- Given four tables of x and y values using only whole numbers, identify which table represents y as a function of x by checking that each x-value is paired with exactly one y-value.",
+   "hard": "Given four sets of ordered pairs,Mapping Diagrams or Tables that include decimals, square roots, and negative values, identify which set represents y as a function of x by recognizing that equivalent expressions (e.g., $\\sqrt{9}$ and $3$) count as the same x-value. OR Given four representations of tables and mappings using positive and negative whole numbers, identify which representation shows y as a function of x.  OR Given a table that shows y as a function of x (using positive and negative whole numbers), determine which ordered pairs could also belong to the function."
+  },
+  "prereq": "Given a relation represented as a set of ordered pairs with whole numbers, select the statement that correctly describes whether the relation is a function of x and provides the correct reasoning.",
+  "los": [
+   "Given a relation represented as a set of ordered pairs with whole numbers, select the statement that correctly describes whether the relation is a function of x and provides the correct reasoning.",
+   "Given four sets of ordered pairs using only whole numbers, identify which set represents y as a function of x by checking that each x-value is paired with exactly one y-value.",
+   "Identify correct mapping diagram of whole numbers that represents y as a function of x",
+   "Given four tables of x and y values using only whole numbers, identify which table represents y as a function of x by checking that each x-value is paired with exactly one y-value.",
+   "Given four sets of ordered pairs that include decimals, square roots, and negative values, identify which set represents y as a function of x and no simplification of square roots is needed to identify repeats.",
+   "Given four mapping diagrams whose inputs and outputs include decimals and negative values, identify which mapping represents y as a function of x",
+   "Given four tables of x and y values that include square roots, decimals and negative values, identify which table represents y as a function of x and no simplification of square roots is needed to identify repeats",
+   "Given four representations of tables and mappings using positive and negative whole numbers, identify which representation shows y as a function of x.",
+   "Given a table that shows y as a function of x (using positive and negative whole numbers), determine which ordered pairs could also belong to the function."
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "Functions",
+  "standardId": "CCSS.MATH.CONTENT.8.F.B.4",
+  "standardDesc": "Construct a function to model a linear relationship between two quantities. Determine the rate of change and initial value of the function from a description of a relationship or from two (x, y) values, including reading these from a table or from a graph. Interpret the rate of change and initial value of a linear function in terms of the situation it models, and in terms of its graph or a table of values.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Finding Slope from a Graph",
+  "subId": "CCSS.MATH.CONTENT.8.F.B.4+1",
+  "subDesc": "Find the slope of a line from a graph.",
+  "ab": "Assessment is restricted to:\n- Questions must involve determining the slope of a straight line from a coordinate grid.\n- The answer must be expressed as a fraction, decimal, or integer or undefined for vertical lines",
+  "diff": {
+   "easy": "Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled. The slope is expressed as a whole number or a fraction or zero slope with no simplification required.",
+   "medium": "Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled. The rise/run ratio must be simplified to obtain a whole number slope. OR Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled. The slope is a well-known fraction that does not require simplification, and the student must express it in decimal form.",
+   "hard": "Determine the slope of a line from a graph on a coordinate grid where no points are explicitly labeled, requiring the student to identify two lattice points on the line and calculate the slope. OR \nIdentify the slope of a line from a graph on a coordinate grid by selecting from answer choices that include a positive value, a negative value, zero, and undefined. Students must recognize the direction of the line and compute the slope value when applicable."
+  },
+  "prereq": "Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled and the slope is an integer value.",
+  "los": [
+   "Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled. The slope is expressed as a whole number or a fraction with no simplification required.",
+   "Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled. The rise/run ratio must be simplified to obtain a whole number slope.",
+   "Determine the slope of a line from a graph on a coordinate grid where no points are explicitly labeled, requiring the student to identify two lattice points on the line and calculate the slope.",
+   "Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled. The slope is a well-known fraction that does not require simplification, and the student must express it in decimal form.",
+   "Determine the slope of a line from a graph on a coordinate grid where two points with integer coordinates are labeled. The resultant slope should be zero slope with no simplification required.",
+   "Identify the slope of a line from a graph on a coordinate grid by selecting from answer choices that include a positive value, a negative value, zero, and undefined. Students must recognize the direction of the line and compute the slope value when applicable."
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "Functions",
+  "standardId": "CCSS.MATH.CONTENT.8.F.B.4",
+  "standardDesc": "Construct a function to model a linear relationship between two quantities. Determine the rate of change and initial value of the function from a description of a relationship or from two (x, y) values, including reading these from a table or from a graph. Interpret the rate of change and initial value of a linear function in terms of the situation it models, and in terms of its graph or a table of values.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Finding Slope from Two Points",
+  "subId": "CCSS.MATH.CONTENT.8.F.B.4+2",
+  "subDesc": "Find the slope of a line from two points or a table.",
+  "ab": "Assessment is restricted to:\n- No algebraic expressions, equations, or function notation in the question stem.",
+  "diff": {
+   "easy": "Calculate the slope of a line passing through two given ordered pairs , where the slope is a positive or negative integer (no simplification required) or Zero slope.",
+   "medium": "Calculate the slope of a line passing through two given ordered pairs with integer coordinates, where the slope simplifies to a fraction or terminating decimal.",
+   "hard": "Determine the slope of a line from a table of ordered pairs representing a linear relationship. The student must pick any two points from the table and apply the slope formula."
+  },
+  "prereq": "- Calculate the slope of a line passing through two given ordered pairs with whole-number coordinates, where the slope simplifies to a positive or negative integer.",
+  "los": [
+   "Calculate the slope of a line passing through two given ordered pairs with whole-number coordinates, where the slope is a positive or negative (no simplification required).",
+   "Calculate the slope of a line passing through two given ordered pairs with integer coordinates, where the slope simplifies to a fraction or terminating decimal.",
+   "Determine the slope of a line from a table of ordered pairs representing a linear relationship. The student must pick any two points from the table and apply the slope formula.",
+   "Calculate the slope of a line passing through two given ordered pairs with whole-number coordinates, where the slope is a zero slope",
+   "Calculate the slope of a line passing through two given ordered pairs"
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "Functions",
+  "standardId": "CCSS.MATH.CONTENT.8.F.B.4",
+  "standardDesc": "Construct a function to model a linear relationship between two quantities. Determine the rate of change and initial value of the function from a description of a relationship or from two (x, y) values, including reading these from a table or from a graph. Interpret the rate of change and initial value of a linear function in terms of the situation it models, and in terms of its graph or a table of values.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Finding Y-Intercept on a Graph",
+  "subId": "CCSS.MATH.CONTENT.8.F.B.4+4",
+  "subDesc": "Find the y-intercept from a graph or a table.",
+  "ab": "- Representations: Coordinate grids with a graphed linear function\n- Graphs display exactly two points with integer coordinates (at grid line intersections so students can read values directly without estimation)\n- Coordinate values range from -10 to 10\n- Y-intercept is always an integer (visible at a grid intersection)\n- Method: Direct reading from graph - identify where the line crosses the y-axis and read its y-coordinate\n- No calculators permitted\n- No real-world or word problem contexts\n- No calculation required - y-intercept is visible on the graph\n- No algebraic manipulation or equation solving required\n- Answer format: Report the y-intercept as a single integer value (not as an ordered pair)",
+  "diff": {
+   "easy": "One labeled point is on the y-axis (x = 0)\n- Y-intercept is directly visible as a labeled point\n- Student reads the y-coordinate of the labeled point on the y-axis",
+   "medium": "Same graph setup as EASY: one point at (0, b), one point off y-axis\n- Point labels are HIDDEN (show_point_labels = false)\n- Student identifies where the line crosses the y-axis and reads the y-coordinate from the grid\n- NOTE: Scaffolds toward reading unlabeled graphs in future lessons",
+   "hard": "Line only, NO points shown on the graph\n- Student must visually identify where the line crosses the y-axis\n- Student reads the y-coordinate from the grid at the y-axis crossing\n- NOTE: Most challenging - requires pure visual interpretation of line position"
+  },
+  "prereq": "- Read and plot ordered pairs on a coordinate plane\n- Identify the y-axis as the vertical axis where x = 0\n- Understand that the y-intercept is where a line crosses the y-axis\n- Read integer values from a coordinate grid\n- Distinguish between x-coordinates and y-coordinates in an ordered pair",
+  "los": [
+   "Given a graph of a linear function with two labeled points where one point is on the y-axis (x = 0), identify the y-intercept by reading the y-coordinate of the labeled point on the y-axis.",
+   "Given a graph of a linear function with two points (one on the y-axis) but NO coordinate labels shown, identify the y-intercept by finding where the line crosses the y-axis and reading the y-coordinate from the grid.",
+   "Given a graph of a linear function showing ONLY the line (no points marked), identify the y-intercept by finding where the line crosses the y-axis and reading the y-coordinate from the grid."
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "Functions",
+  "standardId": "CCSS.MATH.CONTENT.8.F.B.4",
+  "standardDesc": "Construct a function to model a linear relationship between two quantities. Determine the rate of change and initial value of the function from a description of a relationship or from two (x, y) values, including reading these from a table or from a graph. Interpret the rate of change and initial value of a linear function in terms of the situation it models, and in terms of its graph or a table of values.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Writing an Equation for a Line from Two Points",
+  "subId": "CCSS.MATH.CONTENT.8.F.B.4+8",
+  "subDesc": "Write an equation for a line from two points.",
+  "ab": "- Points are given as ordered pairs (x, y) in coordinate notation\n- Slope formula: m = (y₂ - y₁) / (x₂ - x₁)\n- Final equation must be in slope-intercept form: y = mx + b\n- Slopes may be integers or fractions (positive or negative)\n- Y-intercepts may be integers or fractions (positive or negative)\n- Coordinates are limited to integers or simple fractions (halves, quarters)\n- No vertical lines (undefined slope)\n- No horizontal lines at Hard difficulty (slope = 0 only at Easy/Medium if needed)\n- No point-slope form required in answer\n- No standard form (Ax + By = C) required in answer\n- Calculator use is NOT permitted for this lesson\n- Students must show arithmetic steps for slope and y-intercept calculations",
+  "diff": {
+   "easy": "Both points have whole number coordinates only\n- Coordinates may be larger two-digit values (up to ±100)\n- Slope simplifies to an integer\n- Y-intercept is an integer\n- Example: Points (2, 50) and (12, 80) → y = 3x + 44",
+   "medium": "Points may include negative integer coordinates\n- Coordinates may be larger two-digit values (up to ±100)\n- Slope may be a simple fraction (e.g., -3/2, 2/5)\n- Y-intercept is an integer\n- STAAR Reference: G8.2023.Q20 — Points (-2, 70) and (6, -50) → y = -15x + 40",
+   "hard": "Points may include negative numbers AND fractions\n- Slope is a fraction\n- Y-intercept may be a fraction\n- Requires careful sign handling and fraction arithmetic\n- STAAR Reference: G8.2021.Q21 — Points (-1, -1/4) and (1, -3/4) → y = -1/4x - 1/2"
+  },
+  "prereq": "- Calculate slope given two points using m = (y₂ - y₁) / (x₂ - x₁)\n- Identify slope and y-intercept in y = mx + b\n- Perform operations with integers including negative numbers\n- Perform operations with fractions\n- Solve one-step and two-step linear equations for a variable\n- Understand ordered pairs and coordinate notation (x, y)",
+  "los": [
+   "Write the equation of a line in slope-intercept form given two points.",
+   ""
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "Expressions and Equations",
+  "standardId": "CCSS.MATH.CONTENT.8.EE.B.5",
+  "standardDesc": "Graph proportional relationships, interpreting the unit rate as the slope of the graph. Compare two different proportional relationships represented in different ways.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Identifying Proportional Relationships",
+  "subId": "CCSS.MATH.CONTENT.8.EE.B.5+1",
+  "subDesc": "Identify which mathematical graphs, tables or equations are proportional.",
+  "ab": "## COMPLEXITY CONSTRAINTS\n- Tables: 3–5 rows of (x, y) pairs; x-values are integers in the range −20 to 20 (may be non-consecutive); y-values are integers or simple decimals (one decimal place) in the range −100 to 100\n- Graphs: coordinate plane with axes ranging from −9 to 9 on both axes, integer-labeled gridlines, all four quadrants visible\n- Equations: written in the form y = kx, y = mx + b, or equivalent un-simplified forms such as y = k(x + c) where k, m, b, and c are integers or simple fractions (halves, thirds, fourths); no multi-variable equations\n- Constant functions (y = c where c is a nonzero constant) may appear as distractors\n- Answer choices present at most two representation types per question (e.g., two tables, or one table and one graph — not all three types combined)\n\n## CALCULATOR POLICY\nNOTE: Although Grade 8 typically permits calculators, this standard is assessed WITHOUT calculator per STAAR specifications. All ratios must be simple enough to compute mentally or with minimal written work (e.g., 12 ÷ 3 = 4, not 847 ÷ 121).\n\n## IN SCOPE\n- Determining whether a relationship shown in a table is proportional by computing y ÷ x for each row and checking that all ratios are equal and the pattern includes (0, 0)\n- Determining whether a relationship shown on a coordinate graph is proportional by checking that the graph is a straight line through the origin\n- Determining whether a relationship given as an equation is proportional by checking that the equation has the form y = kx with no additive constant (may require distribution or simplification first)\n- Comparing two or more representations (tables, graphs, or equations) to identify which represents a proportional or non-proportional relationship\n- Recognizing that a non-proportional linear relationship (y = mx + b, b ≠ 0) has a constant rate of change but does NOT pass through the origin\n- Recognizing that a constant function (y = c, c ≠ 0) is NOT proportional because the ratio y/x is not constant\n- Tables and graphs where all values are zero (trivial case: y = 0 for all x) — this IS proportional\n\n## OUT OF SCOPE\n- Calculating or naming the constant of proportionality k (that is a separate standard)\n- Writing equations from tables or graphs (that is a separate standard)\n- Graphing relationships from equations or tables\n- Non-linear relationships (quadratic, exponential, etc.) — all relationships presented are linear (or constant)\n- Scatter plots or lines of best fit\n- Unit rate interpretation or real-world rate applications\n- Slope formula (rise/run) — identification is visual or ratio-based, not formula-based\n- Proportional reasoning across different units (e.g., unit conversion)\n- Vertical lines (x = c) — these are not functions and are not tested",
+  "diff": {
+   "easy": "Single representation type: ONE table OR ONE graph per answer choice\n- Table values: x = 1, 2, 3, 4 or similar simple positive sequences; y-values are whole numbers ≤ 30\n- Graphs: clearly labeled integer gridlines (−9 to 9 on both axes); the line obviously passes through or does not pass through the origin\n- The proportional relationship has a whole-number constant ratio (y/x = 2, 3, 5, etc.)\n- The non-proportional relationship is clearly non-proportional: either the y/x ratios are obviously unequal OR the y-intercept is visibly nonzero (e.g., the line crosses the y-axis at 2 or higher)\n- One-step reasoning: check ONE condition (ratio or origin) to distinguish proportional from non-proportional\n- Processing time: ≤ 20 seconds",
+   "medium": "Single representation type: ONE table OR ONE graph per answer choice\n- The non-proportional relationship has a CONSTANT rate of change (constant additive pattern) but does NOT pass through the origin — this forces students to check BOTH conditions, not just one\n- Table values: x-values may be non-consecutive or include negative values (e.g., −3, 1, 5, 9); y-values may be larger whole numbers (up to 100) or simple decimals (one decimal place)\n- Graphs: line may appear close to the origin but clearly crosses the y-axis above or below zero; axes −9 to 9\n- Two-step reasoning: compute ratio AND verify the origin condition\n- Processing time: 20–35 seconds",
+   "hard": "Equations: answer choices are equations in the form y = kx, y = mx + b, y = k(x + c), or y = c; student must determine whether the equation simplifies to y = kx with no additive constant\n- OR mixed representations: answer choices include two different types (e.g., one table and one equation, or one graph and one equation)\n- Equations may use fractional coefficients (y = (2/3)x), negative coefficients (y = –4x), or un-simplified forms (y = 2(x + 4))\n- Non-proportional distractors include equations like y = 3x + 1 (has constant term), y = 2(x + 4) (has hidden constant term after distribution), or y = 5 (constant function)\n- Multi-step reasoning: evaluate each representation using the appropriate method (ratio check for tables, visual check for graphs, form check/simplification for equations)\n- Processing time: 35–45 seconds"
+  },
+  "prereq": "- Compute the quotient of two whole numbers or a decimal divided by a whole number (basic division fluency)\n- Plot and read ordered pairs on a coordinate plane, including identifying the origin (0, 0)\n- Understand that a ratio compares two quantities and that equivalent ratios form a pattern\n- Recognize a straight line on a coordinate plane versus a curve",
+  "los": [
+   "Given four tables of (x, y) pairs, identify which table represents a proportional relationship (or non-proportional relationship) by computing y ÷ x for each row and checking that all ratios are equal.",
+   "Given four representations mixing tables and equations (two of each type), identify which representation best describes a proportional relationship by applying the appropriate check for each type: for tables, check if y/x is constant for every row; for equations, check if the form is y = kx with no constant.",
+   "Given a graph showing a linear relationship, evaluate four statements about whether the graph represents a proportional or non-proportional relationship and identify which statement is true based on whether the line passes through the origin.",
+   "Given four equations, identify which equation represents a proportional relationship by simplifying if needed (distributing parentheses) and checking whether the equation is in the form y = kx with no constant term.",
+   "Given four representations mixing graphs and equations (two of each type), identify which representation best describes a proportional relationship by applying the appropriate check for each type: for graphs, check if the line passes through the origin; for equations, check if the form is y = kx with no constant.",
+   "Given four graphs on coordinate planes, identify which graph represents a proportional relationship (or non-proportional linear relationship) by checking whether each line is straight and passes through the origin (0, 0)."
+  ]
+ },
+ {
+  "course": "8th Grade TEKS",
+  "domain": "Geometry",
+  "standardId": "CCSS.MATH.CONTENT.8.G.A.1",
+  "standardDesc": "Describe the effect of dilations, translations, rotations, and reflections on two-dimensional figures using coordinates.",
+  "unit": "TEKS Supplemental",
+  "lesson": "Transformations",
+  "subId": "CCSS.MATH.CONTENT.8.G.A.1+1",
+  "subDesc": "Identify if a transformation shown is a translation, rotation, reflection or dilation.",
+  "ab": "Assessment is restricted to:\n- Identification of transformation type between: translation, rotation, reflection, dilation\n- All shape vertices located at integer coordinates\n- Question formats:\n  -- Easy questions:\n    --- MCQ with 4 text options: \"Translation\", \"Rotation\", \"Reflection\", \"Dilation\"\n    --- Strict stem: \"What is the type of transformation shown?\"\n    --- COORDINATE CONSTRAINTS FOR STIMULUS:\n      ---- For dilation with scale_factor 2: preimage_x and preimage_y must both be 0 or 1 (to keep the dilated image within [-10, 10]).\n      ---- ALL shapes must be placed so the entire preimage stays within one quadrant (all vertices > 0 or all vertices < 0 on both axes). Use preimage_x >= 1 and preimage_y >= 1.\n      ---- For reflections: the reflected image will be in the opposite quadrant, so the one-quadrant constraint does NOT apply to the image -- only the preimage must be in one quadrant.\n  -- Medium questions:\n    --- MCQ with 4 image options\n    --- Strict stem: \"Look at this shape. Which image shows a [translation/rotation/reflection/dilation]?\"\n- Shape types allowed (all 20 preset shapes are asymmetric so transformations are visually distinguishable):\n  -- Triangles (IDs 1-4): 3 vertices each\n  -- Quadrilaterals (IDs 5-10, 19): 4 vertices each\n  -- Pentagons (IDs 11-14, 20): 5 vertices each\n  -- L/step shapes (IDs 15-18): 6 vertices each\n- Shape ID mapping (the `shape` field in stimulus_description maps to GRID_SHAPE_TEMPLATES):\n  -- Triangles:\n    --- 1 = Right triangle: (0,0),(2,0),(0,3)\n    --- 2 = Scalene triangle: (0,0),(3,0),(1,2)\n    --- 3 = Right triangle v2: (0,0),(3,0),(0,2)\n    --- 4 = Wide scalene: (0,0),(4,0),(1,2)\n  -- Quadrilaterals:\n    --- 5 = Asymmetric trapezoid: (0,0),(3,0),(2,2),(0.5,2)\n    --- 6 = Parallelogram-ish: (0,0),(2,0),(3,1),(1,2)\n    --- 7 = Flag: (0,0),(3,0),(3,2),(0,1)\n    --- 8 = Right trapezoid: (0,0),(3,0),(3,2),(1,2)\n    --- 9 = Slanted parallelogram: (0,0),(2,0),(3,1.5),(1,1.5)\n    --- 10 = Irregular quad: (0,0),(3,0),(2,2),(0,3)\n  -- Pentagons / houses:\n    --- 11 = Asymmetric house: (0,0),(3,0),(3,2),(1,3),(0,2)\n    --- 12 = Irregular pentagon: (0,1),(1,0),(3,0),(3,2),(1,3)\n    --- 13 = Pentagon v2: (0,0),(2,0),(3,1),(2,3),(0,2)\n    --- 14 = Pentagon v3: (0,0),(2,0),(3,1),(1.5,3),(0,1.5)\n  -- L / step shapes:\n    --- 15 = L-shape: (0,0),(1,0),(1,1),(2,1),(2,3),(0,3)\n    --- 16 = Reverse L: (0,0),(2,0),(2,2),(1,2),(1,1),(0,1)\n    --- 17 = Notched rectangle: (0,0),(2,0),(2,1),(3,1),(3,3),(0,3)\n    --- 18 = Step: (0,0),(3,0),(3,1),(2,1),(2,2),(0,2)\n  -- Misc:\n    --- 19 = Kite variant: (0,1),(2,0),(3,1),(2,2.5)\n    --- 20 = Arrowhead: (0,0),(1,0),(2,1),(1.5,2.5),(0,1)\n- Transformation Constraints\n  -- Translation: integer unit shifts only (2-5 units); cardinal directions for EASY, diagonal allowed for MEDIUM\n  -- Rotation: 90°, 180°, or 270° only; about the origin for EASY, variable center for MEDIUM\n  -- Reflection: over x-axis or y-axis for EASY; over x-axis, y-axis, y=x, or y=-x for MEDIUM\n  -- Dilation: scale factor 2 only for EASY; scale factors 2, 3 for MEDIUM; center at origin. Scale factors 1/2 and 1/3 are NOT allowed because they produce non-integer image vertices with the available shape templates.",
+  "diff": {
+   "easy": "MCQs with 4 transformation types as answer options: \"Translation\", \"Rotation\", \"Reflection\", \"Dilation\"\n- Allowed shapes: irregular triangles, irregular shapes, trapezoids\n- MCQs with 4 images as answer options showing each transformation type\n- Allowed shapes: irregular triangles, irregular shapes, trapezoids",
+   "medium": "NA",
+   "hard": "NA"
+  },
+  "prereq": "- Plot and identify points on a coordinate plane using ordered pairs (x, y)\n- Recognize and classify basic geometric shapes (triangles, quadrilaterals)\n- Understand congruence (same size and shape) and similarity (same shape, different size)\n- Identify corresponding vertices and sides between two shapes\n- Recognize lines of symmetry in geometric figures\n- Measure and compare distances on a coordinate grid",
+  "los": [
+   "Identify the type of transformation: translation, rotation, reflection, or dilation.",
+   "Identify the image corresponding to the transformation: translation, rotation, reflection, or dilation."
+  ]
+ }
+]

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+
+# Tooling logs — never commit
+.codex-logs/
+
+# Real curriculum-data sample exports. Left out of version control by default so
+# proprietary data isn't published. Delete this line to commit the demo CSVs
+# (recommended only if this repo is private).
+public/samples/
