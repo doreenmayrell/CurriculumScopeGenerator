@@ -8,6 +8,8 @@
  * Requires a Google OAuth client id - see docs/google-docs-export.md.
  */
 
+import { apiUrl } from "./apiBase.js";
+
 const GIS_SRC = "https://accounts.google.com/gsi/client";
 const OAUTH_SRC = "https://accounts.google.com/o/oauth2/v2/auth";
 // Drive creates the converted Google Doc in the configured folder. Docs scope
@@ -606,7 +608,7 @@ export async function createScopeGoogleDocWithToken({ token, title, lessons, not
 
   let res;
   try {
-    res = await fetch("/api/google-docs/create", {
+    res = await fetch(apiUrl("/api/google-docs/create"), {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import seedLibrary from "../data/library.json";
 import { RUNS, getScopeStandardsForGrade, gradeLabel as formatGradeLabel } from "../data/scopeSeed.js";
 import { buildLibraryFromCSVs } from "../lib/csv.js";
+import { apiUrl } from "../lib/apiBase.js";
 
 const INITIAL_WORKSPACES = [
   { id: "g8math", name: "Grade 8 Math (TEKS)", grade: "8", subject: "Math", icon: "📈", tint: "#eef2ff", lessons: seedLibrary.length, runs: 4 },
@@ -437,7 +438,7 @@ export function useScopingEngine() {
     }, 1200);
 
     try {
-      const healthResp = await fetch("/api/health", { signal: controller.signal });
+      const healthResp = await fetch(apiUrl("/api/health"), { signal: controller.signal });
       const health = await healthResp.json().catch(() => ({}));
       if (!healthResp.ok || !health.ok) {
         throw new Error(health.error || "Claude proxy is not responding. Start it with npm run server or npm run dev.");
@@ -449,7 +450,7 @@ export function useScopingEngine() {
 
       const base64 = await fileToBase64(standardSetFile);
       setRunProgress((current) => Math.max(current, 24));
-      const resp = await fetch("/api/scope", {
+      const resp = await fetch(apiUrl("/api/scope"), {
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json" },
