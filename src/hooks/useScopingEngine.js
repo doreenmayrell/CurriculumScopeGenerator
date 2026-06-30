@@ -110,7 +110,7 @@ function normalizeStandardCode(value = "") {
   if (fullIdMatch) code = fullIdMatch[1];
   else {
     const officialMathMatch = code.match(/\b[A-Z]{2,}(?:\.[A-Z0-9]+)*\.(?:K|\d{1,2})\.[A-Z0-9.()]+\b/i);
-    const teksMatch = code.match(/\b(?:K|\d{1,2})\.\d+(?:\s*\(?[A-Z]\)?)?\b/i);
+    const teksMatch = code.match(/\b(?:K|\d{1,2})\.\d+(?:\.?\(?[A-Z]\)?)?\b/i);
     const ccssMatch = code.match(/\b\d{1,2}\.[A-Z]+\.[A-Z]+\.\d+[A-Z]?\b/i);
     if (officialMathMatch) code = officialMathMatch[0];
     else if (teksMatch) code = teksMatch[0];
@@ -163,6 +163,20 @@ function isExplicitLeafStandardCode(code = "") {
     || /^[A-Z]{2,}(?:\.[A-Z0-9]+)*\.(?:K|\d{1,2})\.[A-Z0-9]+(?:\.[A-Z0-9]+)+$/i.test(normalized);
 }
 
+// Distinguish code systems so a non-CCSS run (e.g. TEKS) never adopts a Common Core code.
+// CCSS leaf codes are grade.DOMAIN.CLUSTER.number (e.g. 2.NBT.A.1, 8.F.B.4, 8.EE.B.5).
+function isCcssLeafCode(code = "") {
+  return /^(?:K|\d{1,2})\.[A-Z]{1,4}\.[A-Z]\.\d+[A-Z]?$/i.test(normalizeStandardCode(code));
+}
+// TEKS-style leaf codes are grade.knowledge(.skill) (e.g. 2.2, 2.2.A, K.9.B, 5.1.A).
+function isTeksLeafCode(code = "") {
+  return /^(?:K|\d{1,2})\.\d+(?:\.[A-Z])?$/i.test(normalizeStandardCode(code));
+}
+// Officially namespaced codes already encode their own system (e.g. Florida MA.K.NSO.1.3).
+function isOfficialPrefixedCode(code = "") {
+  return /^[A-Z]{2,}(?:\.[A-Z0-9]+)*\.(?:K|\d{1,2})\.[A-Z0-9]+(?:\.[A-Z0-9]+)+$/i.test(normalizeStandardCode(code));
+}
+
 function standardTextForFallback(standard) {
   const fieldItems = (standard?.breakdownFields || []).flatMap((field) => [field.label, ...(field.items || [])]);
   return [standard?.standard, standard?.baseCode, ...fieldItems].filter(Boolean).join("\n");
@@ -178,6 +192,8 @@ function suggestedBaseId({ standardSetName, lessonCode, baseCode, standardText, 
     systemFromCode(baseCode) ||
     systemFromCode(standardText) ||
     formatStandardSystemId(standardSetName);
+  if (!system) return "";
+
   const candidates = [
     ...standardCodeCandidates(lessonCode),
     ...standardCodeCandidates(lessonText),
@@ -185,8 +201,29 @@ function suggestedBaseId({ standardSetName, lessonCode, baseCode, standardText, 
     ...standardCodeCandidates(standardText),
     ...standardCodeCandidates(baseCode),
   ];
-  const standard = candidates.find(isExplicitLeafStandardCode) || candidates[0] || normalizeStandardCode(lessonCode) || normalizeStandardCode(baseCode) || normalizeStandardCode(standardText);
-  return system && standard ? `${system}.MATH.CONTENT.${standard}` : "";
+
+  // A code that already carries its own official namespace (e.g. Florida "MA.K.NSO.1.3")
+  // encodes its system — use it verbatim.
+  const officialPrefixed = candidates.find(isOfficialPrefixedCode);
+  if (officialPrefixed) return officialPrefixed;
+
+  // CCSS keeps its established "CCSS.MATH.CONTENT.<code>" namespace.
+  if (system === "CCSS") {
+    const standard =
+      candidates.find(isCcssLeafCode) ||
+      candidates.find(isExplicitLeafStandardCode) ||
+      candidates[0] ||
+      normalizeStandardCode(lessonCode) ||
+      normalizeStandardCode(baseCode) ||
+      normalizeStandardCode(standardText);
+    return standard ? `CCSS.MATH.CONTENT.${standard}` : "";
+  }
+
+  // TEKS and every other non-CCSS system are keyed by their own grade.knowledge.skill
+  // codes (e.g. 2.2.A, K.9.B). They must NEVER borrow a Common Core domain/cluster code
+  // like 2.NBT.A.1, and they do not use the CCSS ".MATH.CONTENT." namespace.
+  const standard = candidates.find(isTeksLeafCode);
+  return standard ? `${system}.${standard}` : "";
 }
 
 // Continue a standard's substandard numbering from the highest +N already in the library.
@@ -724,6 +761,8 @@ export function useScopingEngine() {
       scopeResult && Array.isArray(scopeResult.standards) && scopeResult.standards.length
         ? scopeResult.standards
         : getScopeStandardsForGrade(ws?.grade);
+    // Prefer the standard-set name saved with the run; the live input is cleared on reload.
+    const effectiveStandardSetName = scopeResult?._standardSetName || standardSetName;
     const nextByBase = new Map();
     return base.map((st) => {
       const fallbackCodes = leafExpectationCodesForStandard(st);
@@ -737,7 +776,7 @@ export function useScopingEngine() {
             ...l,
             suggestedSubId: countsForThisRun
               ? suggestSubId({
-                  standardSetName,
+                  standardSetName: effectiveStandardSetName,
                   lessonCode: l.code,
                   baseCode: st.baseCode,
                   standardText: standardTextForFallback(st),
