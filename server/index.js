@@ -190,6 +190,13 @@ CROSS-STANDARD-SET GAP ANALYSIS (this is the primary job — the uploaded standa
 - Known failure modes to never repeat: counting BACKWARD and generating one-more/one-less WITHOUT models are TEKS expectations CCSS does not require — surface them as "stateSet" gap lessons even though CCSS "counting" looks similar.
 - Reconcile: every uploaded lettered expectation appears exactly once as fully covered, partially covered, or a new lesson.
 
+PREPARED GAP LIST MODE:
+- If the user provides a prepared known-gap list, treat it as authoritative. The user already knows which lesson gaps should become scope lessons.
+- Produce exactly one reasonType="stateSet" proposed lesson for each prepared row, preserving row order, lesson title, and the granular standard code from that row.
+- Do not add extra lessons, skip rows, merge rows, or rediscover unrelated gaps. Multiple rows may share the same standard code; that is intentional and means multiple lessons are required for that standard.
+- Use the row's standard description as the official expectation text when available. Use the attached PDF only to verify official wording and context, not to replace the prepared lesson list.
+- Use the row's reasoning and related CCSS field to write the lesson purpose and reason. Related CCSS is context for the comparison, not evidence that the row should be reclassified as a library gap.
+
 GRANULARITY: Apply the Lesson Scope and Granularity Brainlift above. One lesson teaches one expectation or one atom inside an expectation - a single skill mastered in a short session. Split by rule, decision step, representation, confusability, prerequisite, demand band, and systematic error pattern. Do not split for surface-only changes. Constrain scope to what is actually assessed at this grade.
 
 DIFFICULTY LEVELS: For each new lesson, write Easy / Medium / Hard. Each level needs a question "format" (include the state-testing item type and stem template), one concrete "example" stimulus written exactly as a student would see it, and a "rigor" note. Prefer text entry, number entry, equation entry, or multi-text entry whenever the answer can be machine-scored. Use MCQ or multi-select when selected-response is more grade-appropriate. You may describe number lines, tables, graphs, models, or images in the stimulus or answer choices when those are state-test-like for the grade. Rigor rises through cognitive demand, NOT reading load - keep every stem at or below grade-level reading and aligned to the difficulty for that grade. No open-ended constructed-response or "explain in writing" items.
@@ -244,23 +251,45 @@ app.post("/api/google-docs/create", async (req, res) => {
 });
 
 app.post("/api/scope", async (req, res) => {
-  const { standardSetName, gradeLabel, noCcssLessonsExist, uniqueFromCcssOnly, pdf, library = [], supportDocs = [], feedback } = req.body || {};
+  const { standardSetName, gradeLabel, noCcssLessonsExist, uniqueFromCcssOnly, preparedGapMode, preparedGaps = [], preparedGapsText = "", pdf, library = [], supportDocs = [], feedback } = req.body || {};
+  const knownGapRows = Array.isArray(preparedGaps)
+    ? preparedGaps.filter((row) => row && String(row.lessonTitle || "").trim() && String(row.standard || "").trim())
+    : [];
+  const knownGapsRaw = String(preparedGapsText || "").trim();
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(503).json({ error: "Server has no ANTHROPIC_API_KEY. Add it to .env and restart (see docs/ai-scope-proxy.md)." });
   }
-  if (!standardSetName || !pdf || !pdf.base64) {
-    return res.status(400).json({ error: "Missing required fields: standardSetName and pdf.base64." });
+  if (!standardSetName || (!preparedGapMode && (!pdf || !pdf.base64))) {
+    return res.status(400).json({ error: "Missing required fields: standardSetName and standards PDF." });
+  }
+  if (preparedGapMode && !knownGapsRaw && !knownGapRows.length) {
+    return res.status(400).json({ error: "Known gap mode needs the pasted learning gaps." });
   }
 
   const docsText = (supportDocs || []).length
     ? supportDocs.map((d) => `- ${d.name}: ${d.desc || "(no description)"}`).join("\n")
+    : "(none)";
+  const knownGapsText = knownGapsRaw
+    ? knownGapsRaw
+    : knownGapRows.length
+    ? knownGapRows.map((row, index) => [
+        `ROW ${index + 1}`,
+        `Lesson Title: ${row.lessonTitle}`,
+        `Standard Code: ${row.standard}`,
+        `Standard Description: ${row.standardDescription || "(not provided)"}`,
+        `Reasoning for Gap Lesson: ${row.reasoning || "(not provided)"}`,
+        `Related CCSS: ${row.relatedCcss || "(none provided)"}`,
+      ].join("\n")).join("\n\n")
     : "(none)";
 
   const contextText = [
     `NEW STANDARD SYSTEM: ${standardSetName}`,
     `GRADE / COURSE: ${gradeLabel || "(unspecified)"}`,
     `COMPARISON BASELINE: ${gradeLabel || "grade-level"} CCSS`,
+    preparedGapMode
+      ? "RUN MODE: IDENTIFIED LEARNING GAPS - the user has pasted the learning gaps to address (see below). Treat them as the complete requested scope. Apply the Lesson Scope and Granularity Brainlift to generate appropriately scoped lessons that close those gaps; a single gap may need more than one lesson if granularity requires it. Use reasonType='stateSet' and do not propose library gaps."
+      : "RUN MODE: DISCOVER GAPS FROM UPLOADED STANDARDS PDF",
     uniqueFromCcssOnly
       ? "LESSON-LIBRARY AUDIT: SKIP - assume perfect CCSS lesson-library coverage; do not return any reasonType='library' lessons; only return reasonType='stateSet' lessons for uploaded-standard expectations that extend CCSS or are not covered by CCSS at all; fully/partial stay empty."
       : noCcssLessonsExist
@@ -270,13 +299,17 @@ app.post("/api/scope", async (req, res) => {
     `EXISTING LESSON LIBRARY (${library.length} lessons):`,
     JSON.stringify(library).slice(0, 80000),
     "",
+    `IDENTIFIED LEARNING GAPS:\n${knownGapsText}`,
+    "",
     `SUPPORTING DOCUMENTS:\n${docsText}`,
     feedback ? `\nUSER FEEDBACK ON THE PREVIOUS RESULT (highest priority — revise accordingly):\n"""\n${feedback}\n"""` : "",
     uniqueFromCcssOnly
       ? "\nUNIQUE-FROM-CCSS MODE: highest priority. Assume CCSS is already fully and perfectly covered by existing materials. Propose only lessons for the gap between the uploaded standard set and CCSS itself. Do not propose lessons merely because the lesson library lacks a CCSS lesson."
       : "",
     "",
-    `The attached PDF is the ${standardSetName} standards for ${gradeLabel || "this grade"}. Analyze every labeled student expectation in it and return ONLY JSON matching the schema. Proposed lessons must use the most granular expectation code; never use a parent standard code when lettered/child expectations exist. Before returning JSON, internally run a coverage ledger: every granular expectation from the PDF must be accounted for as fully covered, partially covered, or proposed as one or more lessons using the Lesson Scope and Granularity Brainlift. Do not limit output to one requested lesson per standard.`,
+    preparedGapMode
+      ? `Return ONLY JSON matching the schema. Build the scope from the identified learning gaps above, applying the Lesson Scope and Granularity Brainlift. For each gap, create one or more newLessons items with reasonType="stateSet", each scoped to a single granular objective; a gap that spans multiple objectives should yield multiple lessons. Give every lesson a clear teacher-facing name and a code for the most granular standard/expectation it targets (infer the standard code from the gap text when one is provided). Group lessons by their target standard/expectation in the standards array. fully and partial stay empty.`
+      : `The attached PDF is the ${standardSetName} standards for ${gradeLabel || "this grade"}. Analyze every labeled student expectation in it and return ONLY JSON matching the schema. Proposed lessons must use the most granular expectation code; never use a parent standard code when lettered/child expectations exist. Before returning JSON, internally run a coverage ledger: every granular expectation from the PDF must be accounted for as fully covered, partially covered, or proposed as one or more lessons using the Lesson Scope and Granularity Brainlift. Do not limit output to one requested lesson per standard.`,
   ].join("\n");
 
   const ac = new AbortController();
@@ -291,8 +324,12 @@ app.post("/api/scope", async (req, res) => {
   });
 
   try {
-    console.log(`[/api/scope] start ${standardSetName} ${gradeLabel || ""}`.trim());
+    console.log(`[/api/scope] start ${standardSetName} ${gradeLabel || ""}${preparedGapMode ? ` known-gaps=${knownGapsRaw ? "pasted" : knownGapRows.length}` : ""}`.trim());
     const client = new Anthropic();
+    const content = [
+      ...(pdf?.base64 ? [{ type: "document", source: { type: "base64", media_type: "application/pdf", data: pdf.base64 } }] : []),
+      { type: "text", text: contextText },
+    ];
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 32000,
@@ -302,10 +339,7 @@ app.post("/api/scope", async (req, res) => {
       messages: [
         {
           role: "user",
-          content: [
-            { type: "document", source: { type: "base64", media_type: "application/pdf", data: pdf.base64 } },
-            { type: "text", text: contextText },
-          ],
+          content,
         },
       ],
     }, { signal: ac.signal });

@@ -251,6 +251,8 @@ export function useScopingEngine() {
   // run scope
   const [standardSetFile, setStandardSetFile] = useState(null);
   const [standardSetName, setStandardSetName] = useState("");
+  const [preparedGapMode, setPreparedGapMode] = useState(false);
+  const [preparedGapText, setPreparedGapText] = useState("");
   const [running, setRunning] = useState(false);
   const [runStage, setRunStage] = useState("");
   const [runProgress, setRunProgress] = useState(0);
@@ -489,10 +491,17 @@ export function useScopingEngine() {
   const runScope = useCallback(async () => {
     if (running) return;
     if (!standardSetName.trim()) { flash("Name the new standard system first"); return; }
-    if (!standardSetFile) { flash("Attach the standards PDF first"); return; }
+    if (preparedGapMode) {
+      if (!preparedGapText.trim()) { flash("Paste the identified learning gaps first"); return; }
+    } else if (!standardSetFile) {
+      flash("Attach the standards PDF first");
+      return;
+    }
 
     const stateSetOnly = noCcssLessonsExist || uniqueFromCcssOnly;
-    const stages = stateSetOnly
+    const stages = preparedGapMode
+      ? ["Reading known lesson gap list…", standardSetFile ? "Checking official standard PDF…" : `Aligning known gaps to ${gradeLabel} CCSS context…`, "Applying Lesson Scope and Granularity Brainlift…", "Generating lesson scope from known gaps…"]
+      : stateSetOnly
       ? ["Reading uploaded new standard system PDF…", `Comparing new standards against ${gradeLabel} CCSS…`, "Applying Lesson Scope and Granularity Brainlift…", "Generating new-standard bridge lessons…"]
       : ["Reading uploaded new standard system PDF…", `Comparing new standards against ${gradeLabel} CCSS…`, "Auditing lesson library coverage…", "Applying Lesson Scope and Granularity Brainlift…", "Generating new-standard-aligned lesson proposals…"];
 
@@ -527,7 +536,7 @@ export function useScopingEngine() {
       }
       setRunProgress((current) => Math.max(current, 12));
 
-      const base64 = await fileToBase64(standardSetFile);
+      const base64 = standardSetFile ? await fileToBase64(standardSetFile) : "";
       setRunProgress((current) => Math.max(current, 24));
       const resp = await fetch(apiUrl("/api/scope"), {
         method: "POST",
@@ -539,7 +548,9 @@ export function useScopingEngine() {
           gradeLabel,
           noCcssLessonsExist,
           uniqueFromCcssOnly,
-          pdf: { name: standardSetFile.name, base64 },
+          preparedGapMode,
+          preparedGapsText: preparedGapText.trim(),
+          pdf: standardSetFile ? { name: standardSetFile.name, base64 } : null,
           library: built ? library : [],
           supportDocs: supportDocs.map((d) => ({ name: d.name, desc: d.desc })),
         }),
@@ -554,7 +565,14 @@ export function useScopingEngine() {
       clearInterval(progressIv.current);
       setRunProgress(100);
       const runId = `${wsId}-${Date.now()}`;
-      setScopeResult(data);
+      const resultData = {
+        ...data,
+        _scopeMode: preparedGapMode ? "preparedGaps" : "standardDiscovery",
+        _standardSetName: standardSetName.trim(),
+        _gradeLabel: gradeLabel,
+        _sourceFileName: standardSetFile?.name || "",
+      };
+      setScopeResult(resultData);
       setLessonEdits({});
       setActiveRunId(runId);
       setRunning(false);
@@ -569,7 +587,7 @@ export function useScopingEngine() {
             date: new Date().toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }),
             createdAt: Date.now(),
             status: "complete",
-            result: data,
+            result: resultData,
             edits: {},
           },
           ...(prev[wsId] || []),
@@ -592,7 +610,7 @@ export function useScopingEngine() {
     } finally {
       abortRef.current = null;
     }
-  }, [running, standardSetName, standardSetFile, noCcssLessonsExist, uniqueFromCcssOnly, gradeLabel, ws, wsId, built, library, supportDocs, flash]);
+  }, [running, standardSetName, standardSetFile, preparedGapMode, preparedGapText, noCcssLessonsExist, uniqueFromCcssOnly, gradeLabel, ws, wsId, built, library, supportDocs, flash]);
 
   // Kill an in-flight scope run: aborts the fetch (and, via the server, the Claude stream).
   const cancelScope = useCallback(() => {
@@ -746,10 +764,11 @@ export function useScopingEngine() {
     uniqueFromCcssOnly, setUniqueFromCcssOnly: updateUniqueFromCcssOnly,
     supportDocs, setSupportDocs, docDesc, setDocDesc,
     supportDocFile, setSupportDocFile, docAttached: !!supportDocFile, addDoc,
+    preparedGapMode, setPreparedGapMode, preparedGapText, setPreparedGapText,
     // run
     standardSetFile, setStandardSetFile, standardSetName, setStandardSetName, running, runStage, runProgress, runScope, cancelScope, scopeError,
     // result
-    openLessons, setOpenLessons, regenerated, regenKey, lessonEdits, updateLessonEdit,
+    scopeResult, openLessons, setOpenLessons, regenerated, regenKey, lessonEdits, updateLessonEdit,
     scopeFbOpen, setScopeFbOpen, scopeFb, setScopeFb, rerunScope,
     lessonFbOpen, setLessonFbOpen, lessonFb, setLessonFb, rerunLesson,
     // dialogs + toast

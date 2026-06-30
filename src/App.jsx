@@ -314,7 +314,9 @@ function LibraryTab({ e }) {
 function RunScopeTab({ e }) {
   const selectedStandards = e.standardSetFile;
   const selectedDoc = e.supportDocFile;
-  const canRun = !!selectedStandards && !!e.standardSetName.trim() && !e.running;
+  const preparedGapReady = !e.preparedGapMode || !!e.preparedGapText.trim();
+  const sourceReady = e.preparedGapMode ? preparedGapReady : !!selectedStandards;
+  const canRun = sourceReady && !!e.standardSetName.trim() && !e.running;
   const gradeLabel = e.gradeLabel;
   const runProgress = Math.max(0, Math.min(100, Math.round(e.runProgress || 0)));
   const waitingOnClaude = e.running && runProgress >= 90;
@@ -352,7 +354,7 @@ function RunScopeTab({ e }) {
   return (
     <div style={{ ...panel, maxWidth: 760 }}>
       <p style={{ fontSize: 16, fontWeight: 600, margin: "0 0 4px" }}>Analyze Standards</p>
-      <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 14px", lineHeight: 1.5 }}>Upload the new standard system PDF for this grade or course, such as TEKS. The engine compares it against CCSS and proposes new-standard-aligned lessons for expectations in the uploaded system that CCSS does not cover.</p>
+      <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 14px", lineHeight: 1.5 }}>Upload the new standard system PDF for this grade or course, such as TEKS, or provide a known gap list when the lesson gaps are already identified.</p>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 9, background: C.panelAlt, border: "1px solid #eef2f6", borderRadius: 10, padding: "11px 13px", marginBottom: 18 }}>
         <span>🔒</span>
         <p style={{ fontSize: 12.5, color: C.textMuted, margin: 0, lineHeight: 1.5 }}><strong style={{ color: C.textStrong }}>Built-in granularity framework.</strong> Every run applies the governed Lesson Scope and Granularity Brainlift.</p>
@@ -366,7 +368,7 @@ function RunScopeTab({ e }) {
         style={{ ...input, marginBottom: 20 }}
       />
 
-      <label style={lbl}>New Standard System PDF</label>
+      <label style={lbl}>New Standard System PDF{e.preparedGapMode && <span style={{ color: C.textFaint, fontWeight: 500 }}> (optional with known gaps)</span>}</label>
       <div style={{ border: `1px dashed ${selectedStandards ? "#86efac" : C.borderHover}`, borderRadius: 12, padding: 16, background: C.panel, marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <label title={selectedStandards ? selectedStandards.name : "Attach new standard system PDF"} style={{ ...attachBtn, background: selectedStandards ? C.green : "#fff", color: selectedStandards ? "#fff" : C.textStrong, flex: "none", maxWidth: 260 }}>
@@ -375,6 +377,30 @@ function RunScopeTab({ e }) {
           </label>
           {selectedStandards && <span style={{ fontSize: 12.5, color: C.textFaint }}>{formatFileSize(selectedStandards.size)} PDF</span>}
         </div>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ display: "flex", alignItems: "flex-start", gap: 10, border: `1px solid ${e.preparedGapMode ? C.indigoBorder : C.borderSoft}`, borderRadius: 10, padding: "11px 13px", background: e.preparedGapMode ? C.indigoTint : C.panelAlt, cursor: "pointer" }}>
+          <input type="checkbox" checked={e.preparedGapMode} onChange={(ev) => e.setPreparedGapMode(ev.target.checked)} style={{ marginTop: 2 }} />
+          <span>
+            <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.textStrong, marginBottom: 2 }}>Use known lesson gaps</span>
+            <span style={{ display: "block", fontSize: 12.5, color: C.textMuted, lineHeight: 1.45 }}>Paste the identified learning gaps. The system will generate appropriately scoped lessons based on the Granularity Brainlift.</span>
+          </span>
+        </label>
+        {e.preparedGapMode && (
+          <div style={{ border: `1px solid ${C.borderSoft}`, borderRadius: 12, padding: 16, background: C.panel, marginTop: 12 }}>
+            <textarea
+              rows={7}
+              value={e.preparedGapText}
+              onChange={(ev) => e.setPreparedGapText(ev.target.value)}
+              placeholder="Paste the identified learning gaps here…"
+              style={{ ...textarea, fontSize: 13, lineHeight: 1.5 }}
+            />
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12, marginTop: 9 }}>
+              <button onClick={() => e.setPreparedGapText("")} style={{ ...outlineBtn, fontSize: 12, padding: "6px 10px" }}>Clear</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Supporting documents */}
@@ -423,7 +449,7 @@ function RunScopeTab({ e }) {
 
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 18 }}>
         <button onClick={e.runScope} style={{ ...primaryBtn, cursor: canRun ? "pointer" : "default", opacity: canRun || e.running ? 1 : 0.5 }}>
-          {e.running && <Spinner />} {e.running ? "Analyzing…" : "▶  Run scope analysis"}
+          {e.running && <Spinner />} {e.running ? "Analyzing…" : e.preparedGapMode ? "▶  Run scope from known gaps" : "▶  Run scope analysis"}
         </button>
         {e.running && <button onClick={e.cancelScope} style={{ ...outlineBtn, color: C.redStrong, borderColor: "#fecaca" }}>■ Stop</button>}
         {e.running && <span style={{ fontSize: 13, color: C.textMuted }}>{e.runStage}</span>}
@@ -550,8 +576,9 @@ function LessonDetail({ e }) {
 
 /* ---------------- Scope result ---------------- */
 function ScopeResult({ e }) {
-  const skipLibraryCoverage = e.noCcssLessonsExist || e.uniqueFromCcssOnly;
-  const gradeLabel = e.gradeLabel;
+  const preparedGapResult = e.scopeResult?._scopeMode === "preparedGaps";
+  const skipLibraryCoverage = e.noCcssLessonsExist || e.uniqueFromCcssOnly || preparedGapResult;
+  const gradeLabel = e.scopeResult?._gradeLabel || e.gradeLabel;
   const stdsWithMode = e.scopedStandards.map((s) => ({
     ...s,
     newStandardLessons: s.newLessons.filter((l) => l.reasonType === "stateSet"),
@@ -560,17 +587,21 @@ function ScopeResult({ e }) {
   const stds = skipLibraryCoverage ? stdsWithMode.filter((s) => s.newStandardLessons.length > 0) : stdsWithMode;
   const newStandardProposals = stds.flatMap((x) => x.newStandardLessons);
   const libraryGapProposals = stds.flatMap((x) => x.libraryGapLessons);
-  const standardsFileName = e.standardSetFile?.name || "Uploaded new standard system PDF";
-  const standardSetName = e.standardSetName?.trim();
+  const standardsFileName = e.standardSetFile?.name || e.scopeResult?._sourceFileName || (preparedGapResult ? "Known gap list" : "Uploaded new standard system PDF");
+  const standardSetName = e.scopeResult?._standardSetName || e.standardSetName?.trim();
   const standardsLabel = standardSetName ? `${standardSetName} · ${standardsFileName}` : standardsFileName;
-  const resultContext = skipLibraryCoverage
+  const resultContext = preparedGapResult
+    ? `${standardsLabel} · scope built from known gap list for ${gradeLabel}`
+    : skipLibraryCoverage
     ? `${standardsLabel} · new standard system compared against ${gradeLabel} CCSS only`
     : `${standardsLabel} · new standard system compared against ${gradeLabel} CCSS, with optional lesson-library audit`;
   const stats = [
     { value: stds.length, label: "Alignment areas", color: C.ink },
     { value: newStandardProposals.length, label: "New-standard lessons", color: "#2563eb" },
     { value: newStandardProposals.length, label: "Not covered by CCSS", color: C.indigo },
-    skipLibraryCoverage
+    preparedGapResult
+      ? { value: "Known", label: "Gap source", color: C.indigo }
+      : skipLibraryCoverage
       ? { value: "Skipped", label: "Library coverage", color: C.textMuted }
       : { value: libraryGapProposals.length, label: "CCSS library gaps", color: C.amberText },
   ];
@@ -678,9 +709,11 @@ function ScopeResult({ e }) {
 
       {skipLibraryCoverage && (
         <div style={{ border: `1px solid ${C.indigoBorder}`, background: C.indigoTint, borderRadius: 13, padding: 16, marginBottom: 24 }}>
-          <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 4px" }}>Lesson-library coverage skipped</p>
+          <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 4px" }}>{preparedGapResult ? "Identified learning gaps applied" : "Lesson-library coverage skipped"}</p>
           <p style={{ fontSize: 12.5, color: C.textMuted, margin: 0, lineHeight: 1.5 }}>
-            {e.uniqueFromCcssOnly
+            {preparedGapResult
+              ? "This run used the learning gaps you pasted as the source of truth. Each proposed lesson is scoped from those gaps using the Lesson Scope and Granularity Brainlift."
+              : e.uniqueFromCcssOnly
               ? `This run assumes ${gradeLabel} CCSS coverage is already complete and only proposes uploaded-standard lessons that extend CCSS or are not covered by CCSS.`
               : `Because this workspace says no CCSS lessons exist yet, this run only checks the uploaded new standard system against ${gradeLabel} CCSS. Each proposed lesson is aligned to the new standard system and covers an expectation that appears there but is not covered in CCSS.`}
           </p>
