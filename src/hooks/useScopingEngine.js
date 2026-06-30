@@ -48,7 +48,11 @@ function loadSavedWorkspaces() {
 
     const parsed = JSON.parse(saved);
     if (!Array.isArray(parsed)) return INITIAL_WORKSPACES;
-    return parsed.map((w) => ({ ...w, noCcssLessonsExist: !!w.noCcssLessonsExist }));
+    return parsed.map((w) => ({
+      ...w,
+      noCcssLessonsExist: !!w.noCcssLessonsExist,
+      uniqueFromCcssOnly: !!w.uniqueFromCcssOnly,
+    }));
   } catch {
     return INITIAL_WORKSPACES;
   }
@@ -82,6 +86,7 @@ function formatStandardSystemId(value = "") {
   if (!trimmed) return "";
   const acronym = trimmed.match(/\(([A-Z]{2,12})\)/);
   if (acronym) return acronym[1];
+  if (/\bflorida\b/i.test(trimmed) || /\bfl\b/i.test(trimmed)) return "FLORIDA";
   const known = trimmed.match(/\b(TEKS|CCSS)\b/i);
   if (known) return known[1].toUpperCase();
   return trimmed
@@ -104,9 +109,11 @@ function normalizeStandardCode(value = "") {
   const fullIdMatch = code.match(/\b[A-Z][A-Z0-9]*\.MATH(?:\.CONTENT)?\.([A-Z0-9][A-Z0-9.()]*[A-Z0-9)]?)(?:\+\d+)?\b/i);
   if (fullIdMatch) code = fullIdMatch[1];
   else {
+    const officialMathMatch = code.match(/\b[A-Z]{2,}(?:\.[A-Z0-9]+)*\.(?:K|\d{1,2})\.[A-Z0-9.()]+\b/i);
     const teksMatch = code.match(/\b(?:K|\d{1,2})\.\d+(?:\s*\(?[A-Z]\)?)?\b/i);
     const ccssMatch = code.match(/\b\d{1,2}\.[A-Z]+\.[A-Z]+\.\d+[A-Z]?\b/i);
-    if (teksMatch) code = teksMatch[0];
+    if (officialMathMatch) code = officialMathMatch[0];
+    else if (teksMatch) code = teksMatch[0];
     else if (ccssMatch) code = ccssMatch[0];
   }
 
@@ -134,6 +141,9 @@ function standardCodeCandidates(value = "") {
   for (const match of text.matchAll(/\b[A-Z][A-Z0-9]*\.MATH(?:\.CONTENT)?\.[A-Z0-9][A-Z0-9.()]*[A-Z0-9)]?(?:\+\d+)?\b/gi)) {
     add(match[0]);
   }
+  for (const match of text.matchAll(/\b[A-Z]{2,}(?:\.[A-Z0-9]+)*\.(?:K|\d{1,2})\.[A-Z0-9.()]+\b/gi)) {
+    add(match[0]);
+  }
   for (const match of text.matchAll(/\b(?:K|\d{1,2})\.\d+\s*\([A-Z]+\)/gi)) {
     add(match[0]);
   }
@@ -149,7 +159,8 @@ function standardCodeCandidates(value = "") {
 function isExplicitLeafStandardCode(code = "") {
   const normalized = normalizeStandardCode(code);
   return /^(?:K|\d{1,2})\.\d+\.[A-Z]+(?:\.\d+)?$/i.test(normalized)
-    || /^(?:K|\d{1,2})\.[A-Z]+\.[A-Z]+\.\d+[A-Z]?$/i.test(normalized);
+    || /^(?:K|\d{1,2})\.[A-Z]+\.[A-Z]+\.\d+[A-Z]?$/i.test(normalized)
+    || /^[A-Z]{2,}(?:\.[A-Z0-9]+)*\.(?:K|\d{1,2})\.[A-Z0-9]+(?:\.[A-Z0-9]+)+$/i.test(normalized);
 }
 
 function standardTextForFallback(standard) {
@@ -230,6 +241,7 @@ export function useScopingEngine() {
   const [buildError, setBuildError] = useState("");
   const [buildStats, setBuildStats] = useState(null);
   const [noCcssLessonsExist, setNoCcssLessonsExist] = useState(false);
+  const [uniqueFromCcssOnly, setUniqueFromCcssOnly] = useState(false);
 
   // supporting docs (on Run Scope tab)
   const [supportDocs, setSupportDocs] = useState([]);  // [{name, desc, file, size, type}]
@@ -267,6 +279,8 @@ export function useScopingEngine() {
   const iv = useRef(null);
   const progressIv = useRef(null);
   const abortRef = useRef(null); // AbortController for an in-flight scope run
+  const dbHydratedRef = useRef(false);
+  const dbSaveTimerRef = useRef(null);
 
   const ws = useMemo(() => workspaces.find((w) => w.id === wsId) || workspaces[0], [workspaces, wsId]);
   const gradeLabel = formatGradeLabel(ws?.grade);
@@ -276,6 +290,45 @@ export function useScopingEngine() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEYS.workspaces, JSON.stringify(workspaces));
   }, [workspaces]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let canceled = false;
+    fetch("/api/app-state")
+      .then((resp) => (resp.ok ? resp.json() : null))
+      .then((saved) => {
+        if (canceled || !saved) return;
+        if (Array.isArray(saved.workspaces) && saved.workspaces.length) {
+          const hydratedWorkspaces = saved.workspaces.map((w) => ({
+            ...w,
+            noCcssLessonsExist: !!w.noCcssLessonsExist,
+            uniqueFromCcssOnly: !!w.uniqueFromCcssOnly,
+          }));
+          setWorkspaces(hydratedWorkspaces);
+          setRunsByWorkspace(saved.runsByWorkspace || {});
+          if (saved.activeWorkspace && hydratedWorkspaces.some((w) => w.id === saved.activeWorkspace)) setWsId(saved.activeWorkspace);
+          if (saved.activeRun) setActiveRunId(saved.activeRun);
+        } else {
+          fetch("/api/app-state", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workspaces,
+              runsByWorkspace,
+              activeWorkspace: wsId,
+              activeRun: activeRunId,
+            }),
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {
+        // Local browser cache still keeps the app usable if the dev server is restarting.
+      })
+      .finally(() => {
+        dbHydratedRef.current = true;
+      });
+    return () => { canceled = true; };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -299,6 +352,26 @@ export function useScopingEngine() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEYS.runsByWorkspace, JSON.stringify(runsByWorkspace));
   }, [runsByWorkspace]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !dbHydratedRef.current) return;
+    clearTimeout(dbSaveTimerRef.current);
+    dbSaveTimerRef.current = setTimeout(() => {
+      fetch("/api/app-state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspaces,
+          runsByWorkspace,
+          activeWorkspace: wsId,
+          activeRun: activeRunId,
+        }),
+      }).catch(() => {
+        // The localStorage fallback above still preserves work if the API restarts.
+      });
+    }, 250);
+    return () => clearTimeout(dbSaveTimerRef.current);
+  }, [workspaces, runsByWorkspace, wsId, activeRunId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -330,12 +403,14 @@ export function useScopingEngine() {
 
   useEffect(() => {
     setNoCcssLessonsExist(!!ws?.noCcssLessonsExist);
-  }, [ws?.id, ws?.noCcssLessonsExist]);
+    setUniqueFromCcssOnly(!!ws?.uniqueFromCcssOnly);
+  }, [ws?.id, ws?.noCcssLessonsExist, ws?.uniqueFromCcssOnly]);
 
   useEffect(() => {
     return () => {
       clearInterval(iv.current);
       clearInterval(progressIv.current);
+      clearTimeout(dbSaveTimerRef.current);
     };
   }, []);
 
@@ -416,7 +491,8 @@ export function useScopingEngine() {
     if (!standardSetName.trim()) { flash("Name the new standard system first"); return; }
     if (!standardSetFile) { flash("Attach the standards PDF first"); return; }
 
-    const stages = noCcssLessonsExist
+    const stateSetOnly = noCcssLessonsExist || uniqueFromCcssOnly;
+    const stages = stateSetOnly
       ? ["Reading uploaded new standard system PDF…", `Comparing new standards against ${gradeLabel} CCSS…`, "Applying Lesson Scope and Granularity Brainlift…", "Generating new-standard bridge lessons…"]
       : ["Reading uploaded new standard system PDF…", `Comparing new standards against ${gradeLabel} CCSS…`, "Auditing lesson library coverage…", "Applying Lesson Scope and Granularity Brainlift…", "Generating new-standard-aligned lesson proposals…"];
 
@@ -462,6 +538,7 @@ export function useScopingEngine() {
           grade: ws?.grade ?? "",
           gradeLabel,
           noCcssLessonsExist,
+          uniqueFromCcssOnly,
           pdf: { name: standardSetFile.name, base64 },
           library: built ? library : [],
           supportDocs: supportDocs.map((d) => ({ name: d.name, desc: d.desc })),
@@ -515,7 +592,7 @@ export function useScopingEngine() {
     } finally {
       abortRef.current = null;
     }
-  }, [running, standardSetName, standardSetFile, noCcssLessonsExist, gradeLabel, ws, wsId, built, library, supportDocs, flash]);
+  }, [running, standardSetName, standardSetFile, noCcssLessonsExist, uniqueFromCcssOnly, gradeLabel, ws, wsId, built, library, supportDocs, flash]);
 
   // Kill an in-flight scope run: aborts the fetch (and, via the server, the Claude stream).
   const cancelScope = useCallback(() => {
@@ -524,11 +601,12 @@ export function useScopingEngine() {
 
   const rerunScope = useCallback(() => {
     setScopeFbOpen(false);
-    const stages = noCcssLessonsExist
+    const stateSetOnly = noCcssLessonsExist || uniqueFromCcssOnly;
+    const stages = stateSetOnly
       ? ["Re-reading your feedback…", `Re-comparing new standards against ${gradeLabel} CCSS…`, "Applying Lesson Scope and Granularity Brainlift…", "Regenerating new-standard bridge lessons…"]
       : ["Re-reading your feedback…", `Re-comparing new standards against ${gradeLabel} CCSS…`, "Re-auditing lesson library coverage…", "Applying Lesson Scope and Granularity Brainlift…", "Regenerating new-standard-aligned lesson proposals…"];
     stagedRun(stages, { interval: 750, done: () => { setScopeFb(""); flash("Scope re-run with your feedback"); } });
-  }, [noCcssLessonsExist, gradeLabel, stagedRun, flash]);
+  }, [noCcssLessonsExist, uniqueFromCcssOnly, gradeLabel, stagedRun, flash]);
 
   const rerunLesson = useCallback((key) => {
     const fb = lessonFb.trim();
@@ -565,6 +643,7 @@ export function useScopingEngine() {
       lessons: 0,
       runs: 0,
       noCcssLessonsExist: false,
+      uniqueFromCcssOnly: false,
     };
     setWorkspaces((w) => [...w, workspace]);
     setRunsByWorkspace((r) => ({ ...r, [workspace.id]: [] }));
@@ -578,6 +657,11 @@ export function useScopingEngine() {
   const updateNoCcssLessonsExist = useCallback((checked) => {
     setNoCcssLessonsExist(checked);
     setWorkspaces((w) => w.map((x) => (x.id === wsId ? { ...x, noCcssLessonsExist: checked } : x)));
+  }, [wsId]);
+
+  const updateUniqueFromCcssOnly = useCallback((checked) => {
+    setUniqueFromCcssOnly(checked);
+    setWorkspaces((w) => w.map((x) => (x.id === wsId ? { ...x, uniqueFromCcssOnly: checked } : x)));
   }, [wsId]);
 
   const deleteWorkspace = useCallback((id) => {
@@ -629,7 +713,7 @@ export function useScopingEngine() {
       return {
         ...st,
         newLessons: (st.newLessons || []).map((l, li) => {
-          const countsForThisRun = !noCcssLessonsExist || l.reasonType === "stateSet";
+          const countsForThisRun = !(noCcssLessonsExist || uniqueFromCcssOnly) || l.reasonType === "stateSet";
           const fallbackCode = countsForThisRun ? fallbackCodes[countedProposalIndex++] : undefined;
           return {
             ...l,
@@ -649,7 +733,7 @@ export function useScopingEngine() {
         }),
       };
     });
-  }, [scopeResult, library, ws?.grade, standardSetName, noCcssLessonsExist]);
+  }, [scopeResult, library, ws?.grade, standardSetName, noCcssLessonsExist, uniqueFromCcssOnly]);
 
   return {
     // data
@@ -659,6 +743,7 @@ export function useScopingEngine() {
     // build
     uploaded, setUploaded, built, building, buildLibrary, buildError, buildStats,
     noCcssLessonsExist, setNoCcssLessonsExist: updateNoCcssLessonsExist,
+    uniqueFromCcssOnly, setUniqueFromCcssOnly: updateUniqueFromCcssOnly,
     supportDocs, setSupportDocs, docDesc, setDocDesc,
     supportDocFile, setSupportDocFile, docAttached: !!supportDocFile, addDoc,
     // run

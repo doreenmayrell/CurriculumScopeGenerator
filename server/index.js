@@ -12,6 +12,7 @@
 import "dotenv/config";
 import express from "express";
 import Anthropic from "@anthropic-ai/sdk";
+import { readAppDb, writeAppDb } from "./appDb.js";
 import { createScopeGoogleDoc } from "./googleDocsExport.js";
 
 const PORT = Number(process.env.PORT) || 8787;
@@ -181,6 +182,7 @@ CROSS-STANDARD-SET GAP ANALYSIS (this is the primary job — the uploaded standa
 - Decompose every uploaded standard to its smallest LABELED student expectation (e.g. K.2A, K.2B … K.2F; K.9A–D) and evaluate EACH separately. Never collapse a knowledge-and-skills strand into one chunk — within-strand expectations are where gaps hide.
 - Thorough coverage matters more than keeping the lesson count low. A parent standard may need multiple requested lessons, and a single granular expectation may need multiple lesson atoms when the brainlift split criteria are met.
 - Never propose a lesson at a parent standard level when the uploaded standard has labeled child expectations. For example, TEKS 1.2 is not lesson-granular if it contains 1.2A, 1.2B, etc.; each proposed lesson must point to the exact child expectation such as 1.2.A.
+- Preserve the official expectation code exactly as written by the uploaded standards system. If Florida uses "MA.K.NSO.1.3", return "MA.K.NSO.1.3" as the lesson code, not a shortened code like "K.NSO.1.3" or "1.3".
 - For each uploaded expectation, find the nearest analog in CCSS and in the library, then classify the new lesson's reasonType:
    * "stateSet" — no real CCSS analog at this grade (the uploaded system requires it but CCSS does not). The reason MUST name the expectation and state plainly that CCSS does not address it.
    * "library" — CCSS covers the expectation, but the existing library does not yet contain a complete lesson for it.
@@ -193,7 +195,7 @@ GRANULARITY: Apply the Lesson Scope and Granularity Brainlift above. One lesson 
 DIFFICULTY LEVELS: For each new lesson, write Easy / Medium / Hard. Each level needs a question "format" (include the state-testing item type and stem template), one concrete "example" stimulus written exactly as a student would see it, and a "rigor" note. Prefer text entry, number entry, equation entry, or multi-text entry whenever the answer can be machine-scored. Use MCQ or multi-select when selected-response is more grade-appropriate. You may describe number lines, tables, graphs, models, or images in the stimulus or answer choices when those are state-test-like for the grade. Rigor rises through cognitive demand, NOT reading load - keep every stem at or below grade-level reading and aligned to the difficulty for that grade. No open-ended constructed-response or "explain in writing" items.
 
 OUTPUT (return ONLY JSON matching the provided schema):
-- standard: the full standard text. baseCode: the parent standard's code (e.g. "TEKS.MATH.K.2"). code (per new lesson): the most granular raw uploaded expectation only, with no + suffix and no proposed Substandard ID numbering (e.g. "K.2.A", "K.9.B", "5.1.A"). Do not return parent codes like "1.2" when the PDF contains children like "1.2.A". The app converts the granular code to <<STANDARD SYSTEM>>.MATH.CONTENT.<<STANDARD>>+<<#>> and chooses the next available number from the lesson library.
+- standard: the full standard text. baseCode: the parent standard's official code from the uploaded document. code (per new lesson): the most granular raw uploaded expectation exactly as written in the official document, with no + suffix and no proposed Substandard ID numbering (e.g. "K.2.A", "K.9.B", "5.1.A", "MA.K.NSO.1.3"). Do not return parent codes like "1.2" when the PDF contains children like "1.2.A". The app converts the granular code to <<STANDARD SYSTEM>>.MATH.CONTENT.<<STANDARD>>+<<#>> and chooses the next available number from the lesson library.
 - breakdownFields: 2–4 chip groups (e.g. Concepts, Skills, Sub-skills or "TEKS expectations", and a "CCSS comparison" group noting what CCSS does/doesn't cover).
 - cognitive: DOK/complexity. mastery: the mastery expectation.
 - fully / partial: existing-library coverage (empty arrays when the library is empty or no lesson applies).
@@ -202,6 +204,24 @@ OUTPUT (return ONLY JSON matching the provided schema):
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, model: MODEL, hasKey: !!process.env.ANTHROPIC_API_KEY });
+});
+
+app.get("/api/app-state", async (_req, res) => {
+  try {
+    return res.json(await readAppDb());
+  } catch (err) {
+    console.error("[/api/app-state]", err?.message || err);
+    return res.status(500).json({ error: "Could not read the app database." });
+  }
+});
+
+app.put("/api/app-state", async (req, res) => {
+  try {
+    return res.json(await writeAppDb(req.body || {}));
+  } catch (err) {
+    console.error("[/api/app-state]", err?.message || err);
+    return res.status(500).json({ error: "Could not save the app database." });
+  }
 });
 
 app.post("/api/google-docs/create", async (req, res) => {
@@ -224,7 +244,7 @@ app.post("/api/google-docs/create", async (req, res) => {
 });
 
 app.post("/api/scope", async (req, res) => {
-  const { standardSetName, gradeLabel, noCcssLessonsExist, pdf, library = [], supportDocs = [], feedback } = req.body || {};
+  const { standardSetName, gradeLabel, noCcssLessonsExist, uniqueFromCcssOnly, pdf, library = [], supportDocs = [], feedback } = req.body || {};
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(503).json({ error: "Server has no ANTHROPIC_API_KEY. Add it to .env and restart (see docs/ai-scope-proxy.md)." });
@@ -241,7 +261,9 @@ app.post("/api/scope", async (req, res) => {
     `NEW STANDARD SYSTEM: ${standardSetName}`,
     `GRADE / COURSE: ${gradeLabel || "(unspecified)"}`,
     `COMPARISON BASELINE: ${gradeLabel || "grade-level"} CCSS`,
-    noCcssLessonsExist
+    uniqueFromCcssOnly
+      ? "LESSON-LIBRARY AUDIT: SKIP - assume perfect CCSS lesson-library coverage; do not return any reasonType='library' lessons; only return reasonType='stateSet' lessons for uploaded-standard expectations that extend CCSS or are not covered by CCSS at all; fully/partial stay empty."
+      : noCcssLessonsExist
       ? "LESSON-LIBRARY AUDIT: SKIP - treat the library as empty; do not return any reasonType='library' lessons; every gap becomes a new-standard ('stateSet') lesson and fully/partial stay empty."
       : `LESSON-LIBRARY AUDIT: ENABLED — audit against the ${library.length} lessons below.`,
     "",
@@ -250,6 +272,9 @@ app.post("/api/scope", async (req, res) => {
     "",
     `SUPPORTING DOCUMENTS:\n${docsText}`,
     feedback ? `\nUSER FEEDBACK ON THE PREVIOUS RESULT (highest priority — revise accordingly):\n"""\n${feedback}\n"""` : "",
+    uniqueFromCcssOnly
+      ? "\nUNIQUE-FROM-CCSS MODE: highest priority. Assume CCSS is already fully and perfectly covered by existing materials. Propose only lessons for the gap between the uploaded standard set and CCSS itself. Do not propose lessons merely because the lesson library lacks a CCSS lesson."
+      : "",
     "",
     `The attached PDF is the ${standardSetName} standards for ${gradeLabel || "this grade"}. Analyze every labeled student expectation in it and return ONLY JSON matching the schema. Proposed lessons must use the most granular expectation code; never use a parent standard code when lettered/child expectations exist. Before returning JSON, internally run a coverage ledger: every granular expectation from the PDF must be accounted for as fully covered, partially covered, or proposed as one or more lessons using the Lesson Scope and Granularity Brainlift. Do not limit output to one requested lesson per standard.`,
   ].join("\n");

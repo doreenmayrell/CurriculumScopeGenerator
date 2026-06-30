@@ -209,14 +209,23 @@ function WorkspaceDetail({ e }) {
 }
 
 function LibraryTab({ e }) {
-  const noCcssLessonsControl = (
-    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "11px 13px", background: e.noCcssLessonsExist ? C.indigoTint : C.panelAlt, cursor: "pointer", maxWidth: 640 }}>
-      <input type="checkbox" checked={e.noCcssLessonsExist} onChange={(ev) => e.setNoCcssLessonsExist(ev.target.checked)} style={{ marginTop: 2 }} />
-      <span>
-        <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.textStrong, marginBottom: 2 }}>No CCSS lessons exist yet</span>
-        <span style={{ display: "block", fontSize: 12.5, color: C.textMuted, lineHeight: 1.45 }}>Skip lesson-library coverage when running scope analysis. The run will only find gaps between the uploaded new standard system and CCSS.</span>
-      </span>
-    </label>
+  const scopeModeControls = (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 9, maxWidth: 720 }}>
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 10, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "11px 13px", background: e.noCcssLessonsExist ? C.indigoTint : C.panelAlt, cursor: "pointer" }}>
+        <input type="checkbox" checked={e.noCcssLessonsExist} onChange={(ev) => e.setNoCcssLessonsExist(ev.target.checked)} style={{ marginTop: 2 }} />
+        <span>
+          <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.textStrong, marginBottom: 2 }}>No CCSS lessons exist yet</span>
+          <span style={{ display: "block", fontSize: 12.5, color: C.textMuted, lineHeight: 1.45 }}>Skip lesson-library coverage when running scope analysis. The run will only find gaps between the uploaded new standard system and CCSS.</span>
+        </span>
+      </label>
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 10, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "11px 13px", background: e.uniqueFromCcssOnly ? C.indigoTint : C.panelAlt, cursor: "pointer" }}>
+        <input type="checkbox" checked={e.uniqueFromCcssOnly} onChange={(ev) => e.setUniqueFromCcssOnly(ev.target.checked)} style={{ marginTop: 2 }} />
+        <span>
+          <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.textStrong, marginBottom: 2 }}>Only identify lessons that are unique from CCSS</span>
+          <span style={{ display: "block", fontSize: 12.5, color: C.textMuted, lineHeight: 1.45 }}>Assume CCSS coverage is perfect. Only propose lessons for uploaded-standard expectations that extend CCSS or are not covered by CCSS at all.</span>
+        </span>
+      </label>
+    </div>
   );
 
   if (!e.built) {
@@ -240,7 +249,7 @@ function LibraryTab({ e }) {
       <div style={panel}>
         <p style={{ fontSize: 16, fontWeight: 600, margin: "0 0 4px" }}>Import the Data Model</p>
         <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 18px", maxWidth: 680, lineHeight: 1.5 }}>The lesson library is built from two CSV exports of the math data model. Upload both — every <strong style={{ color: C.textStrong }}>active</strong> lesson is read from the Standards file and joined to its learning objectives on <code style={codeChip}>Substandard ID</code>.</p>
-        <div style={{ marginBottom: 18 }}>{noCcssLessonsControl}</div>
+        <div style={{ marginBottom: 18 }}>{scopeModeControls}</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {slot("standards", "FILE 1", "Data Model — Standards", "Course, domain, standard, unit, lesson, Substandard ID, substandard description, assessment boundary, difficulty matrix, prerequisites.")}
           {slot("objectives", "FILE 2", "Data Model — Learning Objectives", "The LO-level Task rows for each Substandard ID — joined to its lesson to complete the library.")}
@@ -267,7 +276,7 @@ function LibraryTab({ e }) {
       <div>
         <p style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-.01em", margin: "0 0 3px" }}>Lesson Library <span style={{ color: C.textFaint, fontWeight: 500 }}>· {e.library.length} lessons</span></p>
         <p style={{ fontSize: 12.5, color: C.textMuted, margin: 0 }}>This data is built directly from the data model. Select a lesson to view its full record.</p>
-        <div style={{ marginTop: 12 }}>{noCcssLessonsControl}</div>
+        <div style={{ marginTop: 12 }}>{scopeModeControls}</div>
         {st && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 11 }}>
             <Chip>{st.lessons} active lessons</Chip>
@@ -541,7 +550,7 @@ function LessonDetail({ e }) {
 
 /* ---------------- Scope result ---------------- */
 function ScopeResult({ e }) {
-  const skipLibraryCoverage = e.noCcssLessonsExist;
+  const skipLibraryCoverage = e.noCcssLessonsExist || e.uniqueFromCcssOnly;
   const gradeLabel = e.gradeLabel;
   const stdsWithMode = e.scopedStandards.map((s) => ({
     ...s,
@@ -555,7 +564,7 @@ function ScopeResult({ e }) {
   const standardSetName = e.standardSetName?.trim();
   const standardsLabel = standardSetName ? `${standardSetName} · ${standardsFileName}` : standardsFileName;
   const resultContext = skipLibraryCoverage
-    ? `${standardsLabel} · new standard system compared against ${gradeLabel} CCSS`
+    ? `${standardsLabel} · new standard system compared against ${gradeLabel} CCSS only`
     : `${standardsLabel} · new standard system compared against ${gradeLabel} CCSS, with optional lesson-library audit`;
   const stats = [
     { value: stds.length, label: "Alignment areas", color: C.ink },
@@ -670,7 +679,11 @@ function ScopeResult({ e }) {
       {skipLibraryCoverage && (
         <div style={{ border: `1px solid ${C.indigoBorder}`, background: C.indigoTint, borderRadius: 13, padding: 16, marginBottom: 24 }}>
           <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 4px" }}>Lesson-library coverage skipped</p>
-          <p style={{ fontSize: 12.5, color: C.textMuted, margin: 0, lineHeight: 1.5 }}>Because this workspace says no CCSS lessons exist yet, this run only checks the uploaded new standard system against {gradeLabel} CCSS. Each proposed lesson is aligned to the new standard system and covers an expectation that appears there but is not covered in CCSS.</p>
+          <p style={{ fontSize: 12.5, color: C.textMuted, margin: 0, lineHeight: 1.5 }}>
+            {e.uniqueFromCcssOnly
+              ? `This run assumes ${gradeLabel} CCSS coverage is already complete and only proposes uploaded-standard lessons that extend CCSS or are not covered by CCSS.`
+              : `Because this workspace says no CCSS lessons exist yet, this run only checks the uploaded new standard system against ${gradeLabel} CCSS. Each proposed lesson is aligned to the new standard system and covers an expectation that appears there but is not covered in CCSS.`}
+          </p>
         </div>
       )}
 
@@ -758,7 +771,7 @@ function NewLessonCard({ e, l, k }) {
   const alignedId = readField("alignedId", l.suggestedSubId);
   const rows = [
     ["Why proposed", "reason", `${reason.label}\n${l.reason || ""}`],
-    ...(e.noCcssLessonsExist && l.reasonType === "stateSet"
+    ...((e.noCcssLessonsExist || e.uniqueFromCcssOnly) && l.reasonType === "stateSet"
       ? [["Instructional goal", "instructionalGoal", `Give students who only followed ${gradeLabel} CCSS exposure, practice, and mastery for this new-standard-system expectation.`]]
       : []),
     ["Lesson Title", "name", l.name],

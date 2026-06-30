@@ -9,3 +9,6 @@ dist/
 
 # Secrets — never commit
 AnthropicKey.txt
+
+# Local app database
+server/data/
