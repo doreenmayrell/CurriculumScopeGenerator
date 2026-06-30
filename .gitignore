@@ -6,3 +6,6 @@ dist/
 
 # Tooling logs — never commit
 .codex-logs/
+
+# Secrets — never commit
+AnthropicKey.txt
