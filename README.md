@@ -15,15 +15,39 @@ Built around **8th-grade math (CCSS/TEKS)** sample data, but grade/subject agnos
 
 This is the React + Vite implementation imported from the
 [Claude Design handoff](https://claude.ai/design/p/2954d10d-69b7-44c5-9612-c2daff457c18)
-(`Curriculum Scoping Engine.dc.html`). The prototype's simulated steps (library build,
-scope run, regenerate) stand in for production CSV parsing and streaming AI calls.
+(`Curriculum Scoping Engine.dc.html`), extended with a real CSV importer, a local Claude
+proxy that runs the scope analysis, and Google Docs export. Each scope run is saved per
+workspace with editable lesson specs and is reopenable from Scope History.
 
-## Run it
+## Getting started
 
 ```bash
+git clone https://github.com/doreenmayrell/CurriculumScopeGenerator.git
+cd CurriculumScopeGenerator
 npm install
-npm run dev      # http://localhost:5173
+cp .env.example .env       # then fill in the values (see below)
+npm run dev                # web app on :5173  +  Claude proxy on :8787
 ```
+
+> Use **`npm run dev`**, not `npm run web`. `dev` starts **both** the Vite web app and the
+> local API server in `server/` (which holds the Anthropic key and creates Google Docs).
+> Run Scope and Export call that server, so web-only gives a *"Claude proxy is not responding"*
+> error.
+
+### Configure `.env`
+
+| Variable | Needed for | Notes |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Run Scope (real AI analysis) | **Server-side only** — no `VITE_` prefix, never shipped to the browser. |
+| `VITE_GOOGLE_CLIENT_ID` | Export to Google Doc | OAuth **Web** client id. Full setup: [docs/google-docs-export.md](docs/google-docs-export.md). |
+| `VITE_GOOGLE_DRIVE_FOLDER_ID` | Export target folder | Defaults to the shared team folder; override to change it. |
+| `VITE_GOOGLE_DRIVE_SCOPE` | optional | Set to `full` only if `drive.file` is denied placing the doc in the folder. |
+
+The app still runs without these: the **Lesson Library importer** and lesson views work
+offline, **Run Scope** needs `ANTHROPIC_API_KEY` + the server, and **Export** downloads a
+Word‑compatible report until `VITE_GOOGLE_CLIENT_ID` is set.
+
+Sample data-model CSVs (8th-grade math) live in `public/samples/` for trying the importer.
 
 ## Project layout
 
