@@ -160,6 +160,13 @@ function WorkspacesList({ e }) {
         </div>
         <button onClick={() => { e.setForm({ name: "", grade: "", subject: "" }); e.setDialog(true); }} style={primaryBtn}>+ New workspace</button>
       </div>
+      {e.workspaces.length === 0 && (
+        <div style={{ border: `1px dashed ${C.border}`, borderRadius: 14, padding: "44px 28px", textAlign: "center", background: "#fff" }}>
+          <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 6px" }}>No workspaces yet</p>
+          <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 18px" }}>Create a workspace for a grade level or course. It’s saved automatically and stays until you delete it.</p>
+          <button onClick={() => { e.setForm({ name: "", grade: "", subject: "" }); e.setDialog(true); }} style={primaryBtn}>+ New workspace</button>
+        </div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
         {e.workspaces.map((w) => (
           <div key={w.id} onClick={() => { e.setWsId(w.id); e.setTab("library"); e.setScreen("workspace"); }} style={cardHover}>

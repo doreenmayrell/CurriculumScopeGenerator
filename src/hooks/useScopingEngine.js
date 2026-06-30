@@ -40,10 +40,13 @@ function loadSavedWorkspaces() {
 
   try {
     const saved = window.localStorage.getItem(STORAGE_KEYS.workspaces);
-    if (!saved) return INITIAL_WORKSPACES;
+    // Seed the demo workspaces only on the very first run (no key yet). Once the
+    // key exists we honor exactly what's saved — including an empty list — so a
+    // workspace stays put until it's deleted and deleted ones never resurrect.
+    if (saved === null) return INITIAL_WORKSPACES;
 
     const parsed = JSON.parse(saved);
-    if (!Array.isArray(parsed) || !parsed.length) return INITIAL_WORKSPACES;
+    if (!Array.isArray(parsed)) return INITIAL_WORKSPACES;
     return parsed.map((w) => ({ ...w, noCcssLessonsExist: !!w.noCcssLessonsExist }));
   } catch {
     return INITIAL_WORKSPACES;
