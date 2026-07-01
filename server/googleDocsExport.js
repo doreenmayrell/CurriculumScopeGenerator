@@ -1,5 +1,5 @@
 const GOOGLE_DOC_MIME = "application/vnd.google-apps.document";
-const MAX_TAB_TITLE_LENGTH = 80;
+const MAX_TAB_TITLE_LENGTH = 50;
 const TABLE_HEADERS = ["Lesson Title", "ID", "Description", "Reasoning for Gap Lesson"];
 
 async function googleFetch(url, token, { method = "GET", body } = {}) {

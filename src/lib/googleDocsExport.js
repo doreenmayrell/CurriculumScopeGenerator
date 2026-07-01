@@ -18,7 +18,7 @@ const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive";
 const DOCS_SCOPE = "https://www.googleapis.com/auth/documents";
 const SCOPE = `${DOCS_SCOPE} ${DRIVE_SCOPE}`;
 const GOOGLE_DOC_MIME = "application/vnd.google-apps.document";
-const MAX_TAB_TITLE_LENGTH = 80;
+const MAX_TAB_TITLE_LENGTH = 50;
 
 let gisPromise = null;
 function loadGis() {

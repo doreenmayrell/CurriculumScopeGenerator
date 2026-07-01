@@ -367,9 +367,30 @@ app.post("/api/scope", async (req, res) => {
     if (!res.writableEnded) abortForDisconnectedClient();
   });
 
+  // A scope run can take 10-15 min. Azure App Service's front-end load balancer
+  // drops any connection idle for ~230s with a 504, so we send the 200 + headers
+  // immediately and write a heartbeat space every 15s while Claude works. JSON
+  // ignores leading whitespace, so the body is "   …   {final json}" and the
+  // browser's resp.json() still parses it. Failures after this point can't change
+  // the status, so they return 200 with an {error} body (client checks data.error).
+  res.status(200);
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("X-Accel-Buffering", "no"); // discourage intermediary buffering
+  res.flushHeaders?.();
+
+  const heartbeat = setInterval(() => {
+    if (res.writableEnded || res.destroyed) { clearInterval(heartbeat); return; }
+    try { res.write(" "); } catch { clearInterval(heartbeat); }
+  }, 15000);
+  const endWith = (payload) => {
+    clearInterval(heartbeat);
+    if (!res.writableEnded && !res.destroyed) res.end(JSON.stringify(payload));
+  };
+
   try {
     console.log(`[/api/scope] start ${standardSetName} ${gradeLabel || ""}${preparedGapMode ? ` known-gaps=${knownGapsRaw ? "pasted" : knownGapRows.length}` : ""}`.trim());
-    const client = new Anthropic();
+    const client = new Anthropic({ timeout: 20 * 60 * 1000 }); // 20 min ceiling for the request
     const content = [
       ...(pdf?.base64 ? [{ type: "document", source: { type: "base64", media_type: "application/pdf", data: pdf.base64 } }] : []),
       { type: "text", text: contextText },
@@ -391,7 +412,7 @@ app.post("/api/scope", async (req, res) => {
     const final = await stream.finalMessage();
 
     if (final.stop_reason === "refusal") {
-      return res.status(422).json({ error: "The model declined to analyze this request." });
+      return endWith({ error: "The model declined to analyze this request." });
     }
 
     const jsonText = final.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim();
@@ -399,11 +420,12 @@ app.post("/api/scope", async (req, res) => {
     try {
       parsed = JSON.parse(jsonText);
     } catch {
-      return res.status(502).json({ error: "The model did not return valid JSON.", raw: jsonText.slice(0, 500) });
+      return endWith({ error: "The model did not return valid JSON.", raw: jsonText.slice(0, 500) });
     }
     console.log(`[/api/scope] complete ${Array.isArray(parsed.standards) ? parsed.standards.length : 0} standards`);
-    return res.json(parsed);
+    return endWith(parsed);
   } catch (err) {
+    clearInterval(heartbeat);
     if (ac.signal.aborted && clientDisconnected) return; // client canceled — connection is gone, nothing to send
     const status = err?.status;
     const msg =
@@ -411,10 +433,16 @@ app.post("/api/scope", async (req, res) => {
       : status === 429 ? "Rate limited by Anthropic (429). Try again shortly."
       : err?.message || "Scope analysis failed.";
     console.error("[/api/scope]", err?.status || "", err?.message || err);
-    return res.status(502).json({ error: msg });
+    return endWith({ error: msg });
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Scope proxy listening on http://localhost:${PORT}  (key ${process.env.ANTHROPIC_API_KEY ? "loaded" : "MISSING"})`);
 });
+// Allow 10-15 min scope analyses: disable Node's request/header/socket timeouts
+// (the heartbeat in /api/scope keeps the connection alive end-to-end).
+server.requestTimeout = 0;
+server.headersTimeout = 0;
+server.timeout = 0;
+server.keepAliveTimeout = 75000;

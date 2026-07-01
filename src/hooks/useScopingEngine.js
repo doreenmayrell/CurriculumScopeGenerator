@@ -594,6 +594,10 @@ export function useScopingEngine() {
       });
       setRunProgress((current) => Math.max(current, 88));
       const data = await resp.json().catch(() => ({}));
+      // The scope endpoint streams heartbeat whitespace then the final JSON, and
+      // reports late failures as a 200 with an {error} body — so check data.error
+      // regardless of status.
+      if (data && data.error) throw new Error(data.error);
       if (!resp.ok) throw new Error(data.error || `Scope request failed (${resp.status})`);
       if (!data || !Array.isArray(data.standards) || !data.standards.length) {
         throw new Error("The model returned no standards.");
