@@ -620,10 +620,12 @@ function ScopeResult({ e }) {
     const merged = {
       ...l,
       name: pick("name", l.name),
+      alphaCore: pick("alphaCore", l.alphaCore || "No"),
       objective: pick("objective", l.objective),
       purpose: pick("purpose", l.purpose),
       prereqs: pick("prereqs", l.prereqs),
       assessed: pick("assessed", l.assessed),
+      keyConcepts: pick("keyConcepts", l.keyConcepts),
       reason: pick("reason", l.reason),
       suggestedSubId: pick("alignedId", l.suggestedSubId),
       code: pick("alignedId", l.code),
@@ -800,6 +802,7 @@ function NewLessonCard({ e, l, k }) {
   const readField = (field, fallback) => edits[field] ?? fallback ?? "";
   const writeField = (field, value) => e.updateLessonEdit(k, field, value);
   const dependencies = `Before:  ${(l.before || []).join(", ")}\nAfter:  ${(l.after || []).join(", ")}`;
+  const keyConceptsText = Array.isArray(l.keyConcepts) ? l.keyConcepts.join("\n") : (l.keyConcepts || "");
   const title = readField("name", l.name);
   const alignedId = readField("alignedId", l.suggestedSubId);
   const rows = [
@@ -808,11 +811,13 @@ function NewLessonCard({ e, l, k }) {
       ? [["Instructional goal", "instructionalGoal", `Give students who only followed ${gradeLabel} CCSS exposure, practice, and mastery for this new-standard-system expectation.`]]
       : []),
     ["Lesson Title", "name", l.name],
+    ["Alpha Core", "alphaCore", l.alphaCore || "No"],
     ["Student Objective", "objective", l.objective],
     ["Purpose", "purpose", l.purpose],
     ["Suggested ID", "alignedId", l.suggestedSubId],
     ["Prerequisites", "prereqs", l.prereqs],
     ["Assessment Boundary", "assessed", l.assessed],
+    ["Key Concepts", "keyConcepts", keyConceptsText],
     ["Dependencies", "dependencies", dependencies],
   ];
   const diffDot = (lvl) => (lvl === "Easy" ? C.greenBorder : lvl === "Medium" ? C.amber : C.red);
